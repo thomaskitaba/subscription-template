@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+  
+<div class="float-above float-bg-dark magenta-box-shadow padding-b">
+    <form action="/signup" method="post" class="padding-m">
+        <div class="input-box  padding-s">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="user-email" placeholder="Email Address" type="text">
+        </div>
+
+        <div class="input-box  padding-s">
+          <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="user-name" placeholder="User name(optional)" type="text">
+        </div>
+        
+        <div class=" input-box  padding-s">
+            <input id="password" name="password" placeholder="Password" type="password">
+        </div>
+        
+        <div class=" input-box  padding-s">
+          <input id="confirm-password" name="confirm-password" placeholder="Confirm Password" type="password">
+        </div>
+        
+        <div class="padding-s border-blue flex-vertical">
+          <div>
+            Get Nofifications about up coming events
+          </div>
+          
+          <div>
+            <select name="subscription" class = "select-width-m">
+              
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+        </div>
+        <div class="add-space-m">
+          <button class="my-button-1" type="submit">Signup</button>
+          
+        </div>
+      </div>
+    
+    </form>
+    
+    
+</div>
+{% endblock %}

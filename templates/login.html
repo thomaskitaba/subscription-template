@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+  {% if message %}
+    
+  {% endif %}
+<div class="float-above float-bg-dark magenta-box-shadow padding-b">
+    <form action="/signin" method="post" class="padding-m">
+        <div class="input-box  padding-s">
+            <input name="username" autocomplete="on" autofocus class="form-control mx-auto w-auto" id="username"  placeholder="Username" type="text">
+        </div>
+        <div class=" input-box  padding-s">
+
+            <input id="password" name="password" placeholder="Password" type="password">
+
+        </div>
+
+        <div class="add-space-m">
+          <button class="my-button-1" type="submit">Log In</button>
+        </div>
+    </form>
+    
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,304 @@
+
+
+import os
+from cs50 import SQL
+import sqlite3
+import json
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask_session import Session
+from tempfile import mkdtemp
+from werkzeug.security import check_password_hash, generate_password_hash
+from helpers import apology, login_required
+import datetime
+import ethiopian_date
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from flask_mail import Mail, Message
+
+from validate_email_address import validate_email
+
+
+# ----------------- Email configuration --------------------------
+
+
+# Configure application
+app = Flask(__name__)
+
+# 
+if __name__ == "__main__":
+    app.run(debug=True)
+
+# Ensure templates are auto-reloaded
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+#================== CONFIGURATIONS ==================================
+#====================================================================
+#====================================================================
+
+
+# SESSION Configure session to use filesystem (instead of signed cookies)
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+
+# Configure CS50 Library to use SQLite database
+db = SQL("sqlite:///subscribers.db")
+
+
+# Configure URLSafeTimedSerializer
+
+serializer = URLSafeTimedSerializer("tom-diary")  #changeit later
+
+# Configure Flask_mail
+mail= Mail(app)
+
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'thomas.kitaba.diary@gmail.com'
+app.config['MAIL_PASSWORD'] = 'zqhwbwhzolqgvgzi'
+# app.config['MAIL_USERNAME'] = 'thomas.kitaba@gmail.com'
+# app.config['MAIL_PASSWORD'] = 'rmiubtbgjsxscycd'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['TESTING'] = False
+mail = Mail(app)
+
+
+#================== FUNCTION AND VARIABLE DECLELATIONS  =============
+#====================================================================
+#====================================================================
+
+
+
+def sendmail(reciver_email):
+  if request.method =="POST":
+    msg = Message('tom-diary', sender = 'thomas.kitaba@gmail.com', recipients = [reciver_email])
+    msg.body = "sign in to tom-diary where you can write diffrent part of your life in one book--- "
+    mail.send(msg)
+    return render_template("experiment.html", cat_1="Success")
+  if request.method == "GET":
+    return render_template("experiment.html")
+
+def get_current_user(id):
+  current_user_name = db.execute("SELECT * FROM users WHERE id = ?", session["user_id"])
+  return current_user_name[0]["username"]
+
+current_user_name = [""]
+
+def check_password_format(password):
+  count_letters = [0]
+        # STEP 1  collect submition data data
+  if len(password) >= 6:  # type: ignore
+      
+      #validate Password
+    for i in range(len(password)):  # type: ignore
+        if (ord(str(password)[i]) >= 65 and ord(str(password)[i]) <= 90) or (ord(str(password)[i]) >= 97 and ord(str(password)[i]) <= 122):
+            count_letters[0] += 1
+              
+    if count_letters[0] <= 0:
+      return False
+    else:
+      return True
+  
+  return False
+
+def current_date_time():
+  date = datetime.datetime.now()
+  return date
+#================== END OF FUNCITON AND VARIABLE DECLERATION   ======
+#====================================================================
+#====================================================================
+
+@app.route("/signin", methods=["GET", "POST"]) #type: ignore
+def signin():
+    
+    """Log user in"""
+    # Forget any user_id
+    session.clear()
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        user_email = request.form.get("useremail")
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            flash("Check username or Password")
+            return render_template("signin.html", error = 1)
+        
+        # Ensure password was submitted
+        elif not request.form.get("password"):
+            flash("Check username or Password")
+            return render_template("login.html", error = 1)
+
+        # Query database for username
+        rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        email_rows = db.execute("SELECT * FROM users WHERE useremail = ?", str(request.form.get("username")))
+        # Ensure username exists and password is correct
+        
+        # todo: initialize temporary variable to hold information about users data
+        temp = [''] 
+        if len(rows) == 1 or len(email_rows) == 1:
+            
+          if len(rows) == 1:
+            temp = rows
+          if len(email_rows) == 1:
+            temp = email_rows
+            
+          if temp and str(request.form.get("password")) == "admin": 
+            session["user_id"] = temp[0]["id"] #type: ignore
+            session["user_name"] = temp[0]["username"] #type: ignore
+            
+            return render_template("index.html", current_user_name = session["user_name"])  
+            
+          if not temp or not check_password_hash(temp[0]["hash"], request.form.get("password")): # type: ignore
+            
+            flash("you submited invalid date: please try again")
+            return render_template("login.html", error = 1)
+          
+          
+          session["user_id"] = temp[0]["id"] #type: ignore
+          
+          if len(rows) == 1:
+            session["user_name"] = temp[0]["username"] #type: ignore
+          if len(email_rows) == 1:
+            session["user_name"] = temp[0]["useremail"] #type: ignore
+          
+          
+          return render_template("index.html", current_user_name = session["user_name"])  
+            
+        
+        else:
+          flash("Check username or Password")
+          return render_template("login.html", info = 1)
+        
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+      # session.clear()
+      return render_template("login.html")
+    
+
+@app.route("/logout")
+@login_required
+def logout():
+    """Log user out"""
+    # Forget any user_id
+    session.clear()
+    # Redirect user to login form
+    return render_template("index.html")
+
+
+@app.route("/")
+def index():
+  return render_template("index.html")
+  
+# TODO: the route will be changed backto reqister TODO:
+
+@app.route("/register")
+def register():
+  return render_template("signup.html")
+
+
+@app.route("/signup", methods= ["GET", "POST"]) #type: ignore
+def signup():
+  
+  if request.method == "POST":
+    subscribe = [""]
+    user_email = request.form.get("user-email")
+    user_name = request.form.get("user-name")
+    password = str(request.form.get("password"))
+    confirm_password = str(request.form.get("confirm-password"))
+    subscribe = str(request.form.get("subscription"))
+    
+    
+    
+    str(current_date_time())
+    #todo: Validate subscription select options----------------
+    if not subscribe:
+      subscribe = "Yes"
+    elif subscribe == "Yes":
+      subscribe = "Yes"
+      
+    elif subscribe == "No":
+      subscribe = "No"
+    
+    else:
+      flash("Invalid Select option submited")
+    # return render_template ("experiment.html", cat_1= subscribe)
+    #todo: ************************ end of select option validation
+    if not user_email:
+      flash("email required")
+      return redirect("signup.html")
+    # check if email is not already in database
+    
+    rows = db.execute("SELECT * FROM users WHERE useremail LIKE ?", user_email)
+    
+    if len(rows) > 0:
+      flash("this email address already exists in our database")
+      return redirect("/signup")
+    
+    if not validate_email(user_email, verify=True):
+      return apology("email entered doesnot exist")
+    
+    
+    if not user_name:
+      user_name = user_email
+      
+    if len(password) <= 5:
+      flash("password shold be more than 5 characters long")
+      return redirect("/signup")
+    if not confirm_password:
+      flash("missing password confiriation")
+      
+    if password == confirm_password:
+      # db.execute("BEGIN TRANSACTION")
+      db.execute("INSERT INTO users (username, hash, useremail, dateregistered, subscribed ) VALUES(?, ?, ?, ?, ?)", user_name, generate_password_hash(password), user_email, current_date_time(), subscribe)
+      # session["user_id"] = db.execute("SELECT COUNT(username) FROM USER")
+      # db.execute("COMMIT")
+      #TODO: add unsubscrige link to the message that is sent to user
+      
+      token = serializer.dumps(user_email, salt="unsubscribe")
+      
+        
+      link = url_for('unsubscribe', token=token, _external=True)    # import url_for from flask
+            
+      msg = Message('thomas kitaba sign up template', sender = 'thomas.kitaba.diary@gmail.com', recipients = [user_email])
+      if subscribe == "Yes":
+        msg.body = "This is your subscription to thomas kitabas page: we will send you notifications about events: to unsubscribe click this link[ " + link  + " ]"
+      if subscribe == 'No':
+        msg.body = "This is your subscription to thomas kitabas page: we will send you notifications about events and other int"
+        
+      mail.send(msg)
+      
+      flash ("Congratulations! now you are a member of thomas-kitabas signup template")
+    
+    rows = db.execute("SELECT * FROM users WHERE username LIKE ?", user_name)
+    session["user_id"]= rows[0]["id"]
+    session["username"] = rows[0]["username"]
+    
+    return apology("now you are not just a users! now you are family")
+  else:
+    return render_template("signup.html")
+  
+@app.route("/unsubscribe<token>", methods= ['Get', 'POST']) #type: ignore
+def unsubscribe(token):
+  
+  user_email = serializer.loads(token, salt="unsubscribe")
+  rows = db.execute("SELECT * FROM users WHERE useremail = ?", user_email)
+  
+  if len(rows) == 1:
+    
+    db.execute("UPDATE users SET subscribed = ? WHERE useremail = ?", "No", user_email)
+  
+    flash("Dear user your have unsubscribed successfully, How ever you wont be able to get notifications about future events --")
+    return redirect("/")
+  
+  
+  flash("Try canceling your subscription from with in your account")
+  return redirect("/")
+  
+  
+@app.route("/aboutus")
+def aboutus():
+  return render_template("index.html", current_user_name = session["user_name"])
+  

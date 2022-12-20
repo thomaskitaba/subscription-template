@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>create and manage diary online tom-diary</title>
+        
+        <!-- CSS only -->
+        
+        <link rel="stylesheet" href="static/style.css">
+        
+        
+    </head>
+    
+    <body >
+        <div class="container">
+            <div class="header magenta-box-shadow">
+              
+              
+                {% if session["user_id"] %}
+                <div class="" >
+                  <ul class="nav">
+                    <li>Link 1</li>
+                    <li>Link 2</li>
+                    <li>Link 3</li>
+
+                    <li> {% if current_user_name %} {{ current_user_name }} {% endif %} </li>
+
+                    <li><a href="/logout">Sign out</a></li>
+                  </ul>
+                </div>
+                
+                {% else %}
+                <ul class="nav align">
+                    
+                    <li> <a href="/signin"><button> Sign in </button></a>      </li>
+                    <li> <a href="/signup"><button>Sign up </button> </a>    </li>
+                    
+                </ul>
+                {% endif %}
+
+            </div> <!-- end of header -->
+            <!-- todo: start of flashed message -->
+            <div class="flex-horizontal">
+            {% if get_flashed_messages() %}
+              {% if info %}
+                <div class = "alert-yellow flex-horizontal">
+              {% endif %}
+              {% if error %}
+                  <div class = "alert-red flex-horizontal">
+              {% endif %}
+              {% if success %}
+                  <div class = "alert-green flex-horizontal">
+              {% endif %}
+                
+                
+                {{ get_flashed_messages() | join(" ") }}
+                
+            </div>
+            {% endif %}
+          </div>
+
+                        
+      <!-- todo: center of body starts here -->
+          <div class="center-body">
+            
+            {% if not session["user_id"] %}
+            
+            <div class="search-heading">
+                
+            </div>
+            
+            {% endif %}
+            {% block main %}
+            
+              <!-- TODO: this is where extended pages go -->
+
+            {% endblock %}
+          </div> <!-- todo: end of CENTR BODY-->
+      </div> <!-- todo: end of container -->
+                    
+    
+    </body>
+              
+  </html>
