@@ -21,8 +21,9 @@
                   <ul class="nav">
                     <li>Link 1</li>
                     <li>Link 2</li>
-                    <li>Link 3</li>
-
+                    {% if subscribe %}
+                    <li> <form action="/subscribe" method = "POST"><button class="my-button-1">Subscribe</button> </form></li>
+                    {% endif %}
                     <li> {% if current_user_name %} {{ current_user_name }} {% endif %} </li>
 
                     <li><a href="/logout">Sign out</a></li>

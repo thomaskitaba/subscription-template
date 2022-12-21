@@ -34,7 +34,6 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 #====================================================================
 #====================================================================
 
-
 # SESSION Configure session to use filesystem (instead of signed cookies)
 
 app.config["SESSION_PERMANENT"] = False
@@ -68,8 +67,6 @@ mail = Mail(app)
 #================== FUNCTION AND VARIABLE DECLELATIONS  =============
 #====================================================================
 #====================================================================
-
-
 
 def sendmail(reciver_email):
   if request.method =="POST":
@@ -141,6 +138,7 @@ def signin():
             
           if len(rows) == 1:
             temp = rows
+            
           if len(email_rows) == 1:
             temp = email_rows
             
@@ -157,15 +155,19 @@ def signin():
           
           
           session["user_id"] = temp[0]["id"] #type: ignore
-          
+          session["subscribed"] = temp[0]["subscribed"] #type: ignore
           if len(rows) == 1:
             session["user_name"] = temp[0]["username"] #type: ignore
+            
           if len(email_rows) == 1:
             session["user_name"] = temp[0]["useremail"] #type: ignore
           
-          
-          return render_template("index.html", current_user_name = session["user_name"])  
+          if temp[0]["subscribed"] == "No": #type: ignore
+            return render_template("index.html", current_user_name = session["user_name"], subscribe = 1)  
+          else:
+            return render_template("index.html", current_user_name = session["user_name"])  
             
+          
         
         else:
           flash("Check username or Password")
@@ -189,9 +191,10 @@ def logout():
 
 
 @app.route("/")
+# @login_required
 def index():
-  return render_template("index.html")
   
+  return render_template("index.html")
 # TODO: the route will be changed backto reqister TODO:
 
 @app.route("/register")
@@ -215,12 +218,12 @@ def signup():
     str(current_date_time())
     #todo: Validate subscription select options----------------
     if not subscribe:
-      subscribe = "Yes"
+      session["subscribe"] = "Yes"
     elif subscribe == "Yes":
-      subscribe = "Yes"
+      session["subscribe"] = "Yes"
       
     elif subscribe == "No":
-      subscribe = "No"
+      session["subscribe"] = "No"
     
     else:
       flash("Invalid Select option submited")
@@ -252,7 +255,7 @@ def signup():
       
     if password == confirm_password:
       # db.execute("BEGIN TRANSACTION")
-      db.execute("INSERT INTO users (username, hash, useremail, dateregistered, subscribed ) VALUES(?, ?, ?, ?, ?)", user_name, generate_password_hash(password), user_email, current_date_time(), subscribe)
+      db.execute("INSERT INTO users (username, hash, useremail, dateregistered, subscribed ) VALUES(?, ?, ?, ?, ?)", user_name, generate_password_hash(password), user_email, current_date_time(), session["subscribe"])
       # session["user_id"] = db.execute("SELECT COUNT(username) FROM USER")
       # db.execute("COMMIT")
       #TODO: add unsubscrige link to the message that is sent to user
@@ -298,7 +301,14 @@ def unsubscribe(token):
   return redirect("/")
   
   
-@app.route("/aboutus")
-def aboutus():
-  return render_template("index.html", current_user_name = session["user_name"])
-  
+@app.route("/subscribe", methods = ['GET', 'POST']) #type: ignore
+def subscribe():
+  if request.method  == "POST":
+    
+    db.execute("UPDATE users SET hash = ? WHERE useremail = ?", generate_password_hash("123456a") , "thomas.kitaba.diary@gmail.com")
+    flash("subscription form will be placed here")
+    return render_template("experiment.html")
+  else:
+    flash("to get subscriptions first you have to signup for an account")
+    return render_template("signin.html")
+
