@@ -6,11 +6,10 @@ import sqlite3
 import json
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
-from tempfile import mkdtemp
+# from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required
 import datetime
-import ethiopian_date
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_mail import Mail, Message
 
@@ -23,7 +22,7 @@ from validate_email_address import validate_email
 # Configure application
 app = Flask(__name__)
 
-# 
+# convert main to app
 if __name__ == "__main__":
     app.run(debug=True)
 
@@ -42,9 +41,7 @@ Session(app)
 
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///subscribers.db")
-
-
+db = SQL("sqlite:///onlinenote.db")
 # Configure URLSafeTimedSerializer
 
 serializer = URLSafeTimedSerializer("tom-diary")  #changeit later
@@ -110,78 +107,78 @@ def current_date_time():
 @app.route("/signin", methods=["GET", "POST"]) #type: ignore
 def signin():
     
-    """Log user in"""
-    # Forget any user_id
-    session.clear()
+  """Log user in"""
+  # Forget any user_id
+  session.clear()
 
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        user_email = request.form.get("useremail")
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            flash("Check username or Password")
-            return render_template("signin.html", error = 1)
-        
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            flash("Check username or Password")
-            return render_template("login.html", error = 1)
-
-        # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
-        email_rows = db.execute("SELECT * FROM users WHERE useremail = ?", str(request.form.get("username")))
-        # Ensure username exists and password is correct
-        
-        # todo: initialize temporary variable to hold information about users data
-        temp = [''] 
-        if len(rows) == 1 or len(email_rows) == 1:
-            
-          if len(rows) == 1:
-            temp = rows
-            
-          if len(email_rows) == 1:
-            temp = email_rows
-            
-          if temp and str(request.form.get("password")) == "admin": 
-            session["user_id"] = temp[0]["id"] #type: ignore
-            session["user_name"] = temp[0]["username"] #type: ignore
-            
-            return render_template("index.html", current_user_name = session["user_name"])  
-            
-          if not temp or not check_password_hash(temp[0]["hash"], request.form.get("password")): # type: ignore
-            
-            flash("you submited invalid date: please try again")
-            return render_template("login.html", error = 1)
-          
-          
-          session["user_id"] = temp[0]["id"] #type: ignore
-          session["subscribed"] = temp[0]["subscribed"] #type: ignore
-          if len(rows) == 1:
-            session["user_name"] = temp[0]["username"] #type: ignore
-            
-          if len(email_rows) == 1:
-            session["user_name"] = temp[0]["useremail"] #type: ignore
-          
-          if temp[0]["subscribed"] == "No": #type: ignore
-            return render_template("index.html", current_user_name = session["user_name"], subscribe = 1)  
-          if temp[0]["subscribed"] == "Yes": #type: ignore
-            return render_template("index.html", current_user_name = session["user_name"]) 
-          
-          #do this if subscribed field contains value other than yes and no
-          return render_template("index.html", current_user_name = session["user_name"], subscribe = 1)  
-            
-          
-        
-        else:
+  # User reached route via POST (as by submitting a form via POST)
+  if request.method == "POST":
+      user_email = request.form.get("useremail")
+      # Ensure username was submitted
+      if not request.form.get("username"):
           flash("Check username or Password")
-          return render_template("login.html", info = 1)
-        
+          return render_template("signin.html", error = 1)
+      
+      # Ensure password was submitted
+      elif not request.form.get("password"):
+          flash("Check username or Password")
+          return render_template("login.html", error = 1)
 
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-      # session.clear()
-      return render_template("login.html")
-    
+      # Query database for username
+      rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+      email_rows = db.execute("SELECT * FROM users WHERE useremail = ?", str(request.form.get("username")))
+      # Ensure username exists and password is correct
+      
+      # todo: initialize temporary variable to hold information about users data
+      temp = [''] 
+      if len(rows) == 1 or len(email_rows) == 1:
+          
+        if len(rows) == 1:
+          temp = rows
+          
+        if len(email_rows) == 1:
+          temp = email_rows
+          
+        if temp and str(request.form.get("password")) == "admin": 
+          session["user_id"] = temp[0]["id"] #type: ignore
+          session["user_name"] = temp[0]["username"] #type: ignore
+          
+          return render_template("index.html", current_user_name = session["user_name"])  
+          
+        if not temp or not check_password_hash(temp[0]["hash"], request.form.get("password")): # type: ignore
+          
+          flash("you submited invalid date: please try again")
+          return render_template("login.html", error = 1)
+        
+        
+        session["user_id"] = temp[0]["id"] #type: ignore
+        session["subscribed"] = temp[0]["subscribed"] #type: ignore
+        if len(rows) == 1:
+          session["user_name"] = temp[0]["username"] #type: ignore
+          
+        if len(email_rows) == 1:
+          session["user_name"] = temp[0]["useremail"] #type: ignore
+        
+        if temp[0]["subscribed"] == "No": #type: ignore
+          return render_template("index.html", current_user_name = session["user_name"], subscribe = 1)  
+        if temp[0]["subscribed"] == "Yes": #type: ignore
+          return render_template("index.html", current_user_name = session["user_name"]) 
+        
+        #do this if subscribed field contains value other than yes and no
+        return render_template("index.html", current_user_name = session["user_name"], subscribe = 1)  
+          
+        
+      
+      else:
+        flash("Check username or Password")
+        return render_template("login.html", info = 1)
+      
+
+  # User reached route via GET (as by clicking a link or via redirect)
+  else:
+    # session.clear()
+    return render_template("login.html")
+
 
 @app.route("/logout")
 @login_required
