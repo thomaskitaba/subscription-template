@@ -620,7 +620,15 @@ input.chekbox-size-m{
   height: 20px;
 }
 
-
+.alert-yellow{
+  background-color:rgb(240, 248, 123)
+}
+.alert-green{
+  background-color: rgb(103, 245, 103);
+}
+.alert-red{
+  background-color: rgb(246, 93, 93);
+}
 .float-bg-light {
   /* background-color: green; */
   background: rgba(243, 237, 237, 0.4);

@@ -9,9 +9,9 @@
 <div class="float-above float-bg-dark magenta-box-shadow padding-b">
     <form action="/signup" method="post" class="padding-m">
         <div class="input-box  padding-s">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="user-email" placeholder="Email Address" type="text">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="useremail" name="user-email" placeholder="Email Address" type="text">
         </div>
-
+        
         <div class="input-box  padding-s">
           <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="user-name" placeholder="User name(optional)" type="text">
         </div>
@@ -26,6 +26,7 @@
         
         <div class="padding-s border-blue flex-vertical">
           <div>
+          <div>
             Get Nofifications about up coming events
           </div>
           
@@ -38,6 +39,36 @@
           </div>
           
         </div>
+        <div class = "margin-top-s">
+          <div>
+            Get our Newsletter
+          </div>
+          
+          <div>
+            <select name="newsletter" onchange=show() class = "select-width-m" id="newsletter">
+              
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div id = "newsletter-duration"class = "margin-top-s">
+            <div>
+            How Often
+            </div>
+            <div>
+            <select name="newsletter-duration"  >
+              <option value="Once per Month">Once per Month</option>
+              <option value="Twice per Month">Twice per Month</option>
+              <option value="Once per Week">Once per Week</option>
+              
+            </select>
+            
+            </div>
+            
+          </div>
+          
+        </div>
+      </div>
         <div class="add-space-m">
           <button class="my-button-1" type="submit">Signup</button>
           
@@ -45,7 +76,6 @@
       </div>
     
     </form>
-    
-    
+
 </div>
 {% endblock %}
